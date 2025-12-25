@@ -1,7 +1,9 @@
+// server/lib/db.js
 import { PrismaClient } from "@prisma/client";
-const globalForPrisma = global; 
-const prisma = new PrismaClient();
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import Database from "better-sqlite3";
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+const sqlite = new Database("prisma/dev.db");
+const adapter = new PrismaBetterSqlite3(sqlite);
 
-export default prisma;
+export const db = new PrismaClient({ adapter });
