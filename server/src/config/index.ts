@@ -7,6 +7,9 @@ const config = {
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || "http://localhost:3005",
   GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID || "",
   GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || "",
+  GOOGLE_GENRATIVE_SECRET_AI_API_KEY:
+    process.env.GOOGLE_GENRATIVE_SECRET_AI_API_KEY || "",
+  CLI_MODEL: process.env.CLI_MODEL || "",
 };
 
 export default config;
