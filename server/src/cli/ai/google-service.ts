@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import config from "../../config/index.js";
 import {
+  convertToModelMessages,
   streamText,
   type LanguageModel,
   type LanguageModelUsage,
@@ -32,7 +33,7 @@ export class AIService {
    * @returns Promise resolving to an AIResponse object
    */
   async sendMessage(
-    messages: ModelMessage[],
+    messages,
     onChunk?: (chunk: string) => void,
     tools?: any,
     onToolCall = null
@@ -44,7 +45,7 @@ export class AIService {
       // };
       const result = streamText({
         model: this.model,
-        messages: messages,
+        messages: convertToModelMessages(messages),
         tools: tools,
       });
 
@@ -75,10 +76,7 @@ export class AIService {
    * @param messages - Array of model messages
    * @returns Promise resolving to the full string response
    */
-  async getMessage(
-    messages: ModelMessage[],
-    tools = undefined
-  ): Promise<string> {
+  async getMessage(messages, tools = undefined): Promise<string> {
     let fullResponse = "";
     await this.sendMessage(messages, (chunk) => {
       fullResponse += chunk;

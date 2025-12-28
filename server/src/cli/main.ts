@@ -5,6 +5,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 import { Command } from "commander";
 import { login, logout, whoami } from "./commands/auth/login.js";
+import { wakeUp } from "./commands/ai/wakeUp.js";
 dotenv.config();
 
 async function main() {
@@ -27,7 +28,8 @@ async function main() {
     .description("CLI -A cli Based AI Tool")
     .addCommand(login)
     .addCommand(logout)
-    .addCommand(whoami);
+    .addCommand(whoami)
+    .addCommand(wakeUp);
 
   program.action(() => {
     program.help();
