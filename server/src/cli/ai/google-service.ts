@@ -2,6 +2,7 @@ import { google } from "@ai-sdk/google";
 import config from "../../config/index.js";
 import {
   convertToModelMessages,
+  generateObject,
   streamText,
   type LanguageModel,
   type LanguageModelUsage,
@@ -114,5 +115,27 @@ export class AIService {
     );
 
     return result.content;
+  }
+}
+
+/**
+ * Genrate structred output usinga zod schema
+ * @param {Object} schema - Zod Schema
+ * @param {string} prompt - Prompt for generation
+ * @returns {Promise<Object>} Parsed object matching the schema
+ */
+
+async function generateStructured(schema, prompt) {
+  try {
+    const result = await generateObject({
+      model: this.model,
+      schema,
+      prompt,
+    });
+
+    return result.object;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : error;
+    console.error(chalk.red("AI Structured Generate Error: "), message);
   }
 }
