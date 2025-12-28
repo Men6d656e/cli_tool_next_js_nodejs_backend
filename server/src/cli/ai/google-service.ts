@@ -33,34 +33,61 @@ export class AIService {
    * @returns Promise resolving to an AIResponse object
    */
   async sendMessage(
-    messages,
+    messages: ModelMessage[],
     onChunk?: (chunk: string) => void,
     tools?: any,
     onToolCall = null
   ): Promise<AIResponse> {
     try {
-      // const streamConfig = {
-      //   model: this.model,
-      //   messages: messages,
-      // };
-      const result = streamText({
+      const streamConfig = {
         model: this.model,
-        messages: convertToModelMessages(messages),
-        tools: tools,
-      });
+        messages: messages,
+      };
+
+      if (tools && Object.keys(tools).length > 0) {
+        streamConfig.tools = tools;
+        streamConfig.maxSteps = 5; //Allow upto 5 tools call steps
+        console.log(
+          chalk.gray(`[DEBUG] Tools enabled: ${Object.keys(tools).join(",")}`)
+        );
+      }
+      const result = streamText(streamConfig);
 
       let fullResponse = "";
-
       for await (const chunk of result.textStream) {
         fullResponse += chunk;
         if (onChunk) {
           onChunk(chunk);
         }
       }
+      const fullResult = result;
+
+      const toolCalls = [];
+      const toolResults = [];
+
+      if (fullResult.steps && Array.isArray(fullResult.steps)) {
+        for (const step of fullResult.steps) {
+          if (step.toolCalls && step.toolCalls.length > 0) {
+            for (const toolCall of step.toolCall) {
+              toolCalls.push(toolCall);
+              if (onToolCall) {
+                onToolCall(toolCall);
+              }
+            }
+          }
+          if (step.toolResults && step.toolResults.length > 0) {
+            toolResults.push(...step.toolResults);
+          }
+        }
+      }
+
       return {
         content: fullResponse,
         finishReason: await result.finishReason,
         usage: await result.usage,
+        toolCall,
+        toolResults,
+        steps: fullResult.steps,
       };
     } catch (error) {
       console.error(
@@ -76,11 +103,16 @@ export class AIService {
    * @param messages - Array of model messages
    * @returns Promise resolving to the full string response
    */
-  async getMessage(messages, tools = undefined): Promise<string> {
+  async getMessage(messages: any[], tools = undefined): Promise<string> {
     let fullResponse = "";
-    await this.sendMessage(messages, (chunk) => {
-      fullResponse += chunk;
-    });
-    return fullResponse;
+    const result = await this.sendMessage(
+      messages,
+      (chunk) => {
+        fullResponse += chunk;
+      },
+      tools
+    );
+
+    return result.content;
   }
 }
